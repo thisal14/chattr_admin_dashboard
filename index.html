@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chattr Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4a6cf7;
+            --primary-dark: #3a5ae8;
+            --secondary: #7c4dff;
+            --success: #48bb78;
+            --danger: #e53e3e;
+            --warning: #ed8936;
+            --info: #4299e1;
+            --light: #f8fafc;
+            --dark: #1a202c;
+            --gray: #718096;
+            --light-gray: #e1e5e9;
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Login Styles */
+        .login-container {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .logo {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+        }
+
+        .subtitle {
+            color: var(--gray);
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid var(--light-gray);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: var(--transition);
+            outline: none;
+            background: #fff;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(74, 108, 247, 0.1);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            width: 100%;
+            padding: 14px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.35);
+        }
+
+        /* Dashboard Styles */
+        .dashboard {
+            display: none;
+            background: #f8fafc;
+            min-height: 100vh;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 18px 24px;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .main-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 30px 24px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 36px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 28px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            border-left: 5px solid;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-card.total { border-left-color: var(--primary); }
+        .stat-card.online { border-left-color: var(--success); }
+        .stat-card.screenshots { border-left-color: var(--warning); }
+        .stat-card.phone { border-left-color: var(--info); }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.total { background: rgba(74, 108, 247, 0.1); color: var(--primary); }
+        .stat-icon.online { background: rgba(72, 187, 120, 0.1); color: var(--success); }
+        .stat-icon.screenshots { background: rgba(237, 137, 54, 0.1); color: var(--warning); }
+        .stat-icon.phone { background: rgba(66, 153, 225, 0.1); color: var(--info); }
+
+        .stat-number {
+            font-size: 2.6rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .stat-trend {
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .trend-up { color: var(--success); }
+        .trend-down { color: var(--danger); }
+
+        .action-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            background: white;
+            padding: 12px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-btn {
+            background: white;
+            border: 2px solid var(--light-gray);
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn.active,
+        .tab-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(74, 108, 247, 0.2);
+        }
+
+        .content-section {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 32px;
+            box-shadow: var(--shadow-sm);
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #38a169 100%);
+            color: white;
+            box-shadow: 0 8px 20px rgba(72, 187, 120, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(72, 187, 120, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #c53030 100%);
+            color: white;
+            box-shadow: 0 8px 20px rgba(229, 62, 62, 0.2);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(229, 62, 62, 0.3);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, var(--info) 0%, #3182ce 100%);
+            color: white;
+            box-shadow: 0 8px 20px rgba(66, 153, 225, 0.2);
+        }
+
+        .btn-info:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(66, 153, 225, 0.3);
+        }
+
+        .search-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .search-bar {
+            flex: 1;
+            min-width: 280px;
+            padding: 14px 18px;
+            border: 2px solid var(--light-gray);
+            border-radius: 10px;
+            font-size: 16px;
+            background: #fff;
+            transition: var(--transition);
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(74, 108, 247, 0.1);
+        }
+
+        .filter-select {
+            padding: 14px 18px;
+            border: 2px solid var(--light-gray);
+            border-radius: 10px;
+            font-size: 16px;
+            background: #fff;
+            min-width: 180px;
+        }
+
+        .accounts-table-container {
+            overflow-x: auto;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .accounts-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 1000px;
+        }
+
+        .accounts-table th,
+        .accounts-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .accounts-table th {
+            background: #f7fafc;
+            font-weight: 600;
+            color: var(--dark);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .accounts-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .accounts-table tr:hover {
+            background: #f7fafc;
+        }
+
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-online {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-offline {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .action-cell {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+        }
+
+        .action-btn.edit {
+            background: rgba(74, 108, 247, 0.1);
+            color: var(--primary);
+        }
+
+        .action-btn.edit:hover {
+            background: rgba(74, 108, 247, 0.2);
+        }
+
+        .action-btn.delete {
+            background: rgba(229, 62, 62, 0.1);
+            color: var(--danger);
+        }
+
+        .action-btn.delete:hover {
+            background: rgba(229, 62, 62, 0.2);
+        }
+
+        .phone-link {
+            color: var(--info);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+        }
+
+        .phone-link:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .toast-icon {
+            font-size: 1.4rem;
+        }
+
+        .toast.success .toast-icon {
+            color: var(--success);
+        }
+
+        .toast.error .toast-icon {
+            color: var(--danger);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 1.2rem;
+            margin-left: 16px;
+        }
+
+        @media (max-width: 992px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .user-info {
+                margin-top: 10px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-tabs {
+                flex-direction: row;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                padding: 30px;
+            }
+
+            .main-content {
+                padding: 24px 16px;
+            }
+
+            .btn-group, .action-cell {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .search-container {
+                flex-direction: column;
+            }
+
+            .search-bar, .filter-select {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="container">
+        <div class="login-container">
+            <div class="logo">
+                <i class="fas fa-comments"></i>
+                Chattr
+            </div>
+            <div class="subtitle">Admin Dashboard</div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" class="form-control" required placeholder="admin">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-control" required placeholder="admin123">
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboardScreen" class="dashboard">
+        <header class="header">
+            <div class="header-content">
+                <h1>
+                    <i class="fas fa-comments"></i>
+                    Chattr Admin Dashboard
+                </h1>
+                <div class="user-info">
+                    <div class="user-avatar">A</div>
+                    <span>Welcome, Admin</span>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Stats Overview -->
+            <div class="stats-grid">
+                <div class="stat-card total">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number" id="totalAccounts">1,572</div>
+                            <div class="stat-label">Total Accounts</div>
+                        </div>
+                        <div class="stat-icon total">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="stat-trend trend-up">
+                        <i class="fas fa-arrow-up"></i> 4.2% from last week
+                    </div>
+                </div>
+                <div class="stat-card online">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number" id="onlineAccounts">429</div>
+                            <div class="stat-label">Online Now</div>
+                        </div>
+                        <div class="stat-icon online">
+                            <i class="fas fa-signal"></i>
+                        </div>
+                    </div>
+                    <div class="stat-trend trend-up">
+                        <i class="fas fa-arrow-up"></i> 12.7% from last hour
+                    </div>
+                </div>
+                <div class="stat-card screenshots">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number" id="screenshotAlerts">8</div>
+                            <div class="stat-label">Screenshot Alerts</div>
+                        </div>
+                        <div class="stat-icon screenshots">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                    </div>
+                    <div class="stat-trend trend-down">
+                        <i class="fas fa-arrow-down"></i> 33% from yesterday
+                    </div>
+                </div>
+                <div class="stat-card phone">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number" id="phoneUsers">1,289</div>
+                            <div class="stat-label">Verified Phones</div>
+                        </div>
+                        <div class="stat-icon phone">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                    </div>
+                    <div class="stat-trend trend-up">
+                        <i class="fas fa-arrow-up"></i> 7.5% from last week
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Tabs -->
+            <div class="action-tabs">
+                <button class="tab-btn active" onclick="showSection('accounts')">
+                    <i class="fas fa-user-cog"></i> Manage Accounts
+                </button>
+                <button class="tab-btn" onclick="showSection('online')">
+                    <i class="fas fa-user-clock"></i> Online Users
+                </button>
+                <button class="tab-btn" onclick="showSection('screenshots')">
+                    <i class="fas fa-camera"></i> Screenshot Alerts
+                </button>
+            </div>
+
+            <!-- Manage Accounts Section -->
+            <div id="accountsSection" class="content-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-user-cog"></i> Account Management
+                    </h2>
+                    <div class="btn-group">
+                        <button class="btn btn-success" onclick="addAccount()">
+                            <i class="fas fa-plus"></i> Add Account
+                        </button>
+                        <button class="btn btn-info" onclick="updateAccount()">
+                            <i class="fas fa-sync"></i> Update Account
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteAccount()">
+                            <i class="fas fa-trash"></i> Delete Account
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Add/Edit Account Form -->
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="accountUsername" class="form-control" placeholder="Enter username">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="accountEmail" class="form-control" placeholder="Enter email">
+                    </div>
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="accountName" class="form-control" placeholder="Enter full name">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="accountPhone" class="form-control" placeholder="Enter phone number">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="accountPassword" class="form-control" placeholder="Enter password">
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="accountStatus" class="form-control">
+                            <option value="active">Active</option>
+                            <option value="suspended">Suspended</option>
+                            <option value="pending">Pending Verification</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Search and Filter -->
+                <div class="search-container">
+                    <input type="text" class="search-bar" placeholder="Search accounts..." oninput="searchAccounts(this.value)">
+                    <select class="filter-select" onchange="filterAccounts(this.value)">
+                        <option value="all">All Accounts</option>
+                        <option value="online">Online Only</option>
+                        <option value="offline">Offline Only</option>
+                        <option value="verified">Phone Verified</option>
+                    </select>
+                </div>
+
+                <!-- Accounts Table -->
+                <div class="accounts-table-container">
+                    <table class="accounts-table" id="accountsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Full Name</th>
+                                <th>Phone</th>
+                                <th>Status</th>
+                                <th>Last Seen</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accountsTableBody">
+                            <!-- Sample data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Online Users Section -->
+            <div id="onlineSection" class="content-section hidden">
+                <h2 class="section-title">
+                    <i class="fas fa-user-clock"></i> Currently Online Users
+                </h2>
+                <table class="accounts-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            <th>Active Since</th>
+                            <th>Device</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>john_doe</td>
+                            <td>John Doe</td>
+                            <td><a href="tel:+15551234567" class="phone-link"><i class="fas fa-phone"></i> +1 (555) 123-4567</a></td>
+                            <td><span class="status-badge status-online"><i class="fas fa-circle"></i> Active</span></td>
+                            <td>15 min ago</td>
+                            <td>Mobile App</td>
+                        </tr>
+                        <tr>
+                            <td>mike_wilson</td>
+                            <td>Mike Wilson</td>
+                            <td><a href="tel:+15559876543" class="phone-link"><i class="fas fa-phone"></i> +1 (555) 987-6543</a></td>
+                            <td><span class="status-badge status-online"><i class="fas fa-circle"></i> Active</span></td>
+                            <td>2 min ago</td>
+                            <td>Mobile App</td>
+                        </tr>
+                        <tr>
+                            <td>sarah_brown</td>
+                            <td>Sarah Brown</td>
+                            <td><a href="tel:+15555678901" class="phone-link"><i class="fas fa-phone"></i> +1 (555) 567-8901</a></td>
+                            <td><span class="status-badge status-online"><i class="fas fa-circle"></i> Active</span></td>
+                            <td>45 min ago</td>
+                            <td>Web Browser</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Screenshot Alerts Section -->
+            <div id="screenshotsSection" class="content-section hidden">
+                <h2 class="section-title">
+                    <i class="fas fa-camera"></i> Screenshot Attempt Alerts
+                </h2>
+                <table class="accounts-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Phone</th>
+                            <th>Chat Partner</th>
+                            <th>Timestamp</th>
+                            <th>Device Info</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>alex_jones</td>
+                            <td><a href="tel:+15551239876" class="phone-link"><i class="fas fa-phone"></i> +1 (555) 123-9876</a></td>
+                            <td>sarah_brown</td>
+                            <td>2024-05-29 14:30:15</td>
+                            <td>iPhone 14 Pro</td>
+                            <td><button class="btn btn-danger"><i class="fas fa-exclamation-triangle"></i> Warn User</button></td>
+                        </tr>
+                        <tr>
+                            <td>tom_harris</td>
+                            <td><a href="tel:+15559871234" class="phone-link"><i class="fas fa-phone"></i> +1 (555) 987-1234</a></td>
+                            <td>lisa_white</td>
+                            <td>2024-05-29 13:45:22</td>
+                            <td>Samsung Galaxy S23</td>
+                            <td><button class="btn btn-danger"><i class="fas fa-exclamation-triangle"></i> Warn User</button></td>
+                        </tr>
+                        <tr>
+                            <td>david_clark</td>
+                            <td><a href="tel:+15555671234" class="phone-link"><i class="fas fa-phone"></i> +1 (555) 567-1234</a></td>
+                            <td>emma_davis</td>
+                            <td>2024-05-29 12:20:08</td>
+                            <td>Google Pixel 7</td>
+                            <td><button class="btn btn-danger"><i class="fas fa-exclamation-triangle"></i> Warn User</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast" class="toast">
+        <div class="toast-icon"></div>
+        <div class="toast-message"></div>
+        <button class="toast-close">&times;</button>
+    </div>
+
+    <script>
+        // Initialize sample accounts data
+        const accounts = [
+            {
+                id: '001',
+                username: 'john_doe',
+                email: 'john@example.com',
+                name: 'John Doe',
+                phone: '+1 (555) 123-4567',
+                status: 'online',
+                lastSeen: '2 min ago'
+            },
+            {
+                id: '002',
+                username: 'jane_smith',
+                email: 'jane@example.com',
+                name: 'Jane Smith',
+                phone: '+1 (555) 987-6543',
+                status: 'offline',
+                lastSeen: '1 hour ago'
+            },
+            {
+                id: '003',
+                username: 'mike_wilson',
+                email: 'mike@example.com',
+                name: 'Mike Wilson',
+                phone: '+1 (555) 456-7890',
+                status: 'online',
+                lastSeen: 'Just now'
+            },
+            {
+                id: '004',
+                username: 'sarah_brown',
+                email: 'sarah@example.com',
+                name: 'Sarah Brown',
+                phone: '+1 (555) 567-8901',
+                status: 'online',
+                lastSeen: '15 min ago'
+            },
+            {
+                id: '005',
+                username: 'david_clark',
+                email: 'david@example.com',
+                name: 'David Clark',
+                phone: '+1 (555) 234-5678',
+                status: 'offline',
+                lastSeen: '3 hours ago'
+            }
+        ];
+
+        // DOM Elements
+        const loginScreen = document.getElementById('loginScreen');
+        const dashboardScreen = document.getElementById('dashboardScreen');
+        const accountsTableBody = document.getElementById('accountsTableBody');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.querySelector('.toast-message');
+        const toastIcon = document.querySelector('.toast-icon');
+        const toastClose = document.querySelector('.toast-close');
+
+        // Login functionality
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Simple validation (in real app, this would connect to your backend)
+            if (username === 'admin' && password === 'admin123') {
+                loginScreen.style.display = 'none';
+                dashboardScreen.style.display = 'block';
+                populateAccountsTable();
+            } else {
+                showToast('Invalid credentials. Use admin/admin123 for demo.', 'error');
+            }
+        });
+
+        // Logout functionality
+        function logout() {
+            dashboardScreen.style.display = 'none';
+            loginScreen.style.display = 'flex';
+            document.getElementById('loginForm').reset();
+            showToast('You have been logged out successfully', 'success');
+        }
+
+        // Tab switching
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(el => {
+                el.classList.add('hidden');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(section + 'Section').classList.remove('hidden');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Populate accounts table
+        function populateAccountsTable() {
+            accountsTableBody.innerHTML = '';
+            
+            accounts.forEach(account => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${account.id}</td>
+                    <td>${account.username}</td>
+                    <td>${account.email}</td>
+                    <td>${account.name}</td>
+                    <td><a href="tel:${account.phone.replace(/\D/g, '')}" class="phone-link"><i class="fas fa-phone"></i> ${account.phone}</a></td>
+                    <td><span class="status-badge status-${account.status}"><i class="fas fa-circle"></i> ${account.status.charAt(0).toUpperCase() + account.status.slice(1)}</span></td>
+                    <td>${account.lastSeen}</td>
+                    <td class="action-cell">
+                        <button class="action-btn edit" onclick="selectAccount('${account.username}')">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="action-btn delete" onclick="deleteAccountPrompt('${account.username}')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </td>
+                `;
+                accountsTableBody.appendChild(row);
+            });
+        }
+
+        // Account management functions
+        function addAccount() {
+            const username = document.getElementById('accountUsername').value;
+            const email = document.getElementById('accountEmail').value;
+            const name = document.getElementById('accountName').value;
+            const phone = document.getElementById('accountPhone').value;
+            const password = document.getElementById('accountPassword').value;
+            const status = document.getElementById('accountStatus').value;
+            
+            if (!username || !email || !name || !phone || !password) {
+                showToast('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            // Add to accounts array
+            accounts.push({
+                id: (accounts.length + 1).toString().padStart(3, '0'),
+                username,
+                email,
+                name,
+                phone,
+                status: status === 'active' ? 'online' : 'offline',
+                lastSeen: 'Just now'
+            });
+            
+            // Update table
+            populateAccountsTable();
+            showToast('Account added successfully!', 'success');
+            clearAccountForm();
+        }
+
+        function updateAccount() {
+            const username = document.getElementById('accountUsername').value;
+            if (!username) {
+                showToast('Please select an account to update', 'error');
+                return;
+            }
+            
+            const account = accounts.find(acc => acc.username === username);
+            if (!account) {
+                showToast('Account not found', 'error');
+                return;
+            }
+            
+            // Update account data
+            account.email = document.getElementById('accountEmail').value || account.email;
+            account.name = document.getElementById('accountName').value || account.name;
+            account.phone = document.getElementById('accountPhone').value || account.phone;
+            account.status = document.getElementById('accountStatus').value === 'active' ? 'online' : 'offline';
+            
+            // Update table
+            populateAccountsTable();
+            showToast('Account updated successfully!', 'success');
+            clearAccountForm();
+        }
+
+        function deleteAccountPrompt(username) {
+            if (confirm(`Are you sure you want to delete account: ${username}?`)) {
+                deleteAccount(username);
+            }
+        }
+
+        function deleteAccount(username = '') {
+            if (!username) {
+                username = document.getElementById('accountUsername').value;
+                if (!username) {
+                    showToast('Please select an account to delete', 'error');
+                    return;
+                }
+            }
+            
+            const index = accounts.findIndex(acc => acc.username === username);
+            if (index === -1) {
+                showToast('Account not found', 'error');
+                return;
+            }
+            
+            accounts.splice(index, 1);
+            populateAccountsTable();
+            showToast('Account deleted successfully!', 'success');
+            clearAccountForm();
+        }
+
+        function selectAccount(username) {
+            const account = accounts.find(acc => acc.username === username);
+            if (account) {
+                document.getElementById('accountUsername').value = account.username;
+                document.getElementById('accountEmail').value = account.email;
+                document.getElementById('accountName').value = account.name;
+                document.getElementById('accountPhone').value = account.phone;
+                document.getElementById('accountStatus').value = account.status === 'online' ? 'active' : 'suspended';
+                document.getElementById('accountPassword').value = '';
+                
+                // Scroll to form
+                document.getElementById('accountUsername').focus();
+            }
+        }
+
+        function clearAccountForm() {
+            document.getElementById('accountUsername').value = '';
+            document.getElementById('accountEmail').value = '';
+            document.getElementById('accountName').value = '';
+            document.getElementById('accountPhone').value = '';
+            document.getElementById('accountPassword').value = '';
+            document.getElementById('accountStatus').value = 'active';
+        }
+
+        function searchAccounts(query) {
+            const rows = accountsTableBody.getElementsByTagName('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const text = row.textContent.toLowerCase();
+                
+                if (text.includes(query.toLowerCase())) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        }
+
+        function filterAccounts(filter) {
+            const rows = accountsTableBody.getElementsByTagName('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const statusCell = row.querySelector('.status-badge');
+                const phoneCell = row.querySelector('.phone-link');
+                
+                let showRow = true;
+                
+                if (filter === 'online' && (!statusCell || !statusCell.classList.contains('status-online'))) {
+                    showRow = false;
+                }
+                
+                if (filter === 'offline' && (!statusCell || !statusCell.classList.contains('status-offline'))) {
+                    showRow = false;
+                }
+                
+                if (filter === 'verified' && !phoneCell) {
+                    showRow = false;
+                }
+                
+                row.style.display = showRow ? '' : 'none';
+            }
+        }
+
+        // Toast notification
+        function showToast(message, type) {
+            toastMessage.textContent = message;
+            toast.className = `toast ${type} show`;
+            
+            if (type === 'success') {
+                toastIcon.className = 'toast-icon fas fa-check-circle';
+            } else {
+                toastIcon.className = 'toast-icon fas fa-exclamation-circle';
+            }
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Close toast
+        toastClose.addEventListener('click', () => {
+            toast.classList.remove('show');
+        });
+
+        // Simulate real-time updates
+        setInterval(() => {
+            const onlineCount = document.getElementById('onlineAccounts');
+            const currentCount = parseInt(onlineCount.textContent);
+            const change = Math.floor(Math.random() * 10) - 3;
+            const newCount = Math.max(100, currentCount + change);
+            onlineCount.textContent = newCount;
+            
+            // Update phone users stat
+            const phoneUsers = document.getElementById('phoneUsers');
+            const phoneCount = parseInt(phoneUsers.textContent);
+            const phoneChange = Math.floor(Math.random() * 8);
+            phoneUsers.textContent = phoneCount + phoneChange;
+        }, 15000);
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set initial stats
+            document.getElementById('phoneUsers').textContent = accounts.filter(a => a.phone).length;
+        });
+    </script>
+</body>
+</html>
